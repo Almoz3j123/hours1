@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Hours Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        .container h2 {
+            margin-bottom: 20px;
+        }
+        .container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .container button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            margin-top: 10px;
+            color: green;
+        }
+        .login-container {
+            display: none;
+        }
+        .tracker-container {
+            display: none;
+        }
+        .login-container.active, .tracker-container.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container login-container" id="loginContainer">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+        <p class="message" id="loginMessage"></p>
+    </div>
+
+    <div class="container tracker-container" id="trackerContainer">
+        <h2>Work Hours Tracker</h2>
+        <input type="text" id="task" placeholder="Task Description" required>
+        <input type="number" id="hours" placeholder="Hours Worked" min="0" step="0.1" required>
+        <button onclick="logHours()">Log Hours</button>
+        <p class="message" id="trackerMessage"></p>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const adminCredentials = {
+            username: 'admin',
+            password: 'password123'
+        };
+
+        function showLogin() {
+            document.getElementById('loginContainer').classList.add('active');
+            document.getElementById('trackerContainer').classList.remove('active');
+        }
+
+        function showTracker() {
+            document.getElementById('loginContainer').classList.remove('active');
+            document.getElementById('trackerContainer').classList.add('active');
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const message = document.getElementById('loginMessage');
+
+            if (username === adminCredentials.username && password === adminCredentials.password) {
+                message.style.color = 'green';
+                message.textContent = 'Login successful! Redirecting...';
+                setTimeout(() => {
+                    showTracker();
+                }, 1000);
+            } else {
+                message.style.color = 'red';
+                message.textContent = 'Invalid username or password';
+            }
+        }
+
+        function loadLogs() {
+            const logContainer = document.getElementById('log');
+            const logs = JSON.parse(localStorage.getItem('workLogs')) || [];
+            logContainer.innerHTML = logs.map(log => `<p>${log.task}: ${log.hours} hours</p>`).join('');
+        }
+
+        function logHours() {
+            const task = document.getElementById('task').value;
+            const hours = parseFloat(document.getElementById('hours').value);
+            const message = document.getElementById('trackerMessage');
+
+            if (task && !isNaN(hours) && hours >= 0) {
+                let logs = JSON.parse(localStorage.getItem('workLogs')) || [];
+                logs.push({ task, hours });
+                localStorage.setItem('workLogs', JSON.stringify(logs));
+                message.textContent = 'Hours logged successfully!';
+                loadLogs();
+                document.getElementById('task').value = '';
+                document.getElementById('hours').value = '';
+            } else {
+                message.textContent = 'Please enter valid task description and hours.';
+            }
+        }
+
+        // Initial load
+        loadLogs();
+        showLogin(); // Show login container by default
+    </script>
+</body>
+</html>
